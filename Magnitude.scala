@@ -29,14 +29,12 @@ object Localizable{
 }
 
 class iString(val iMsg: String){
-  override lazy val toString = iMsg
+  override val toString = iMsg
 }
 
 object iString{
 
   type LocaleMap = (Locale) => (String) => String
-
-
 
   def apply(o : Any)(implicit locale: Locale, localeMap: LocaleMap ) = o match{
     case l: Localizable =>
@@ -141,6 +139,18 @@ trait FormulaData extends Localizable{
   val computations : Map[Variable,Computation]
 }
 
+
+trait Computator{
+  import Computator._
+  import FormulaData._
+  def compute(variables : (VariableName) => Value )
+}
+
+object Computator{
+  import FormulaData._
+  def compile( c : Computation ) : Computator = ???
+}
+
 object Main extends App{
 
 
@@ -184,7 +194,7 @@ object Main extends App{
     printLocalized(lable)
     printLocalized("b")
     printLocalized(speed)
-    speed.units.foreach(u => printLocalized(u) )
+    speed.units.foreach( u => printLocalized(u) )
 
   }
 
