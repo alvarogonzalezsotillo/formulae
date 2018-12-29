@@ -1,60 +1,13 @@
 package formulae 
 
 import formulae.FormulaEvaluator.{FunctionMapExpressionContext, VariableMapExpressionContext}
-import formulae.FormulaParser.{BinaryExpression, Expression, ExpressionOperator, FactorOperator, FunctionCall, Number, UnaryExpression, Variable}
+import formulae.FormulaParser.{BinaryExpression, Expression, FunctionCall, Number, UnaryExpression, Variable}
 
 import scala.util.{Failure, Success, Try}
 import scala.util.parsing.combinator.RegexParsers
 import scala.{Unit => Void}
 
 
-object FormulaEvaluator{
-
-  trait ExpressionContext{
-    def valueOf(v: Variable) : Try[Double]
-    def valueOf(f: FunctionCall) : Try[Double]
-  }
-
-  trait VariableMapExpressionContext extends ExpressionContext{
-    val variableMap : Map[String,Double]
-    def valueOf(v: Variable ) = Try(variableMap(v.symbol.name))
-  }
-
-  trait FunctionMapExpressionContext extends ExpressionContext{
-    val functionMap : Map[String,(Seq[Double])=>Double]
-    def valueOf(f: FunctionCall) : Try[Double] = {
-      val args = f.arguments.map( e => computeValue(e)(this) )
-      val firstError = args.find( _.isFailure )
-      if( firstError.isDefined ){
-        firstError.get
-      }
-      else Try{
-        val fun = functionMap(f.name.name)
-        fun(args.map(_.get))
-      }
-    }
-  }
-
-  def computeValue(e: Expression)(implicit context: ExpressionContext) : Try[Double] = e match {
-    case fc : FunctionCall => context.valueOf(fc)
-    case BinaryExpression(e1, op, e2) => op.operator match {
-      case "+" => for( v1 <- computeValue(e1); v2 <- computeValue(e2) ) yield v1+v2
-      case "-" => for( v1 <- computeValue(e1); v2 <- computeValue(e2) ) yield v1-v2
-      case "/" => for( v1 <- computeValue(e1); v2 <- computeValue(e2) ) yield v1/v2
-      case "*" => for( v1 <- computeValue(e1); v2 <- computeValue(e2) ) yield v1*v2
-      case _ => Failure(new Exception(s"Operador binario no reconocido: $op"))
-    }
-    case UnaryExpression(op, e) => op.operator match{
-      case "+" => for( v <- computeValue(e) ) yield v
-      case "-" => for( v <- computeValue(e) ) yield -v
-      case _ => Failure(new Exception(s"Operador unario no reconocido: $op"))
-
-    }
-    case Number(value) => Success(value.toDouble)
-    case v : Variable => context.valueOf(v)
-    case _ => Failure( new Exception( s"Expresión no reconocida: $e") )
-  }
-}
 
 object FormulaParser{
 
@@ -68,12 +21,9 @@ object FormulaParser{
   case class Symbol(name:String){
     override val toString = name
   }
-  trait Operator{
-    val operator: String
+  case class Operator(operator: String){
     override val toString = operator
   }
-  case class ExpressionOperator(override val operator: String) extends Operator
-  case class FactorOperator(override val operator: String) extends Operator
 
   case class FunctionCall(name: Symbol, arguments: Seq[Expression] ) extends Expression{
     override lazy val toString = s"$name(${arguments.mkString(",")})"
@@ -124,8 +74,8 @@ class FormulaParser extends RegexParsers{
 
   def minus : Parser[String] = "-".r
 
-  def expressionOperator : Parser[ExpressionOperator] = (plus | minus) ^^ {
-    case s => ExpressionOperator(s)
+  def expressionOperator : Parser[Operator] = (plus | minus) ^^ {
+    case s => Operator(s)
   }
 
   def multiply : Parser[String] = "\\*".r
@@ -134,8 +84,8 @@ class FormulaParser extends RegexParsers{
 
   def mod : Parser[String] = "%".r
 
-  def factorOperator : Parser[FactorOperator] = (multiply | divide | mod) ^^ {
-    case s => FactorOperator(s)
+  def factorOperator : Parser[Operator] = (multiply | divide | mod) ^^ {
+    case s => Operator(s)
   }
 
   def number : Parser[Number] = "[0-9]+(\\.[0-9]*)?([eE][\\+-]?[0-9]*)?".r ^^ {
@@ -188,7 +138,7 @@ class FormulaParser extends RegexParsers{
     functionCall |
     variable |
     number |
-    minus ~ expression ^^ { case o ~ e => UnaryExpression(ExpressionOperator(o),e) } |
+    minus ~ expression ^^ { case o ~ e => UnaryExpression(Operator(o),e) } |
     plus ~> expression
   }
 
@@ -267,6 +217,8 @@ object ParserMain extends App{
 
     )
 
+    implicit val context = DefaultExpressionContext
+
     for( t <- tests ){
       p.parseAll[Expression]( p.expression, t ) match{
         case p.Success(result, _) =>
@@ -289,31 +241,18 @@ object ParserMain extends App{
       "-a",
       "a*b-c*d",
       "sen(x*t+f)",
+      "cos(x*t+f)",
+      "sen(x*t+f)*sen(x*t+f) + cos(x*t+f)*cos(x*t+f)",
       "avg(x,cos(x*t+f),a())",
+      "cos(a,b)",
+      "avg()",
       "-52",
       "+abc"
 
 
     )
 
-    implicit val ec = new VariableMapExpressionContext with FunctionMapExpressionContext{
-      override val variableMap: Map[String, Double] = Map(
-        "a" -> 1,
-        "b" -> 2,
-        "c" -> 3,
-        "d" -> 4,
-        "t" -> 0.5,
-        "f" -> 0.25,
-        "x" -> -1
-
-      )
-      override val functionMap: Map[String, Seq[Double] => Double] = Map(
-        "sen" -> { case a => Math.sin(a.head) },
-        "cos" -> { case a => Math.cos(a.head) },
-        "avg" -> { case args => args.sum/args.size },
-        "a" -> { case _ => 10 }
-      )
-    }
+    implicit val context = DefaultExpressionContext
 
     for( t <- tests ){
       p.parseAll[Expression]( p.expression, t ) match{
