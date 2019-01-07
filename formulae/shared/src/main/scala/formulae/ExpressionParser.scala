@@ -1,7 +1,7 @@
 package formulae 
 
 import formulae.FormulaEvaluator.{FunctionMapExpressionContext, VariableMapExpressionContext}
-import formulae.FormulaParser.{BinaryExpression, Expression, FunctionCall, Number, UnaryExpression, Variable}
+import formulae.ExpressionParser.{BinaryExpression, Expression, FunctionCall, Number, UnaryExpression, Variable}
 
 import scala.util.{Failure, Success, Try}
 import scala.util.parsing.combinator.RegexParsers
@@ -9,7 +9,7 @@ import scala.{Unit => Void}
 
 
 
-object FormulaParser{
+object ExpressionParser{
 
 
   def withIndent( out : (String)=>Void, indent: String = "  " ) = (s:String) => out( indent + s )
@@ -59,12 +59,12 @@ object FormulaParser{
 }
 
 
-class FormulaParser extends RegexParsers{
+class ExpressionParser extends RegexParsers{
 
 
-  import FormulaParser._
+  import ExpressionParser._
 
-  def symbol : Parser[Symbol] = "\\p{IsAlphabetic}(\\p{IsAlphabetic}|[0-9])*".r ^^ {
+  def symbol : Parser[Symbol] = "[a-zA-Z]([a-zA-Z]|[0-9])*".r ^^ {
     case s => Symbol(s)
   }
 
@@ -149,9 +149,9 @@ class FormulaParser extends RegexParsers{
 
 object ParserMain extends App{
 
-  import FormulaParser.Expression
+  import ExpressionParser.Expression
 
-  val p = new FormulaParser
+  val p = new ExpressionParser
 
   def testSymbol() = {
     val tests = Seq(
@@ -203,73 +203,9 @@ object ParserMain extends App{
 
   }
 
-  def testExpression(){
-    val tests = Seq(
-      "a",
-      "a+b-c",
-      "-a",
-      "a*b-c*d",
-      "sen(x*t+f)",
-      "sin(x,cos(x*t+f),a())",
-      "-52",
-      "+abc"
+  
+  
 
 
-    )
-
-    implicit val context = DefaultExpressionContext
-
-    for( t <- tests ){
-      p.parseAll[Expression]( p.expression, t ) match{
-        case p.Success(result, _) =>
-          val r : Expression = result
-          println( s"$r")
-          r.dump(println)
-        case p.NoSuccess(msg,_) =>
-          println( "No success:" + msg )
-
-      }
-      
-    }
 
   }
-
-  def testEvaluation(){
-    val tests = Seq(
-      "a",
-      "a+b-c",
-      "-a",
-      "a*b-c*d",
-      "sen(x*t+f)",
-      "cos(x*t+f)",
-      "sen(x*t+f)*sen(x*t+f) + cos(x*t+f)*cos(x*t+f)",
-      "avg(x,cos(x*t+f),a())",
-      "cos(a,b)",
-      "avg()",
-      "-52",
-      "+abc"
-
-
-    )
-
-    implicit val context = DefaultExpressionContext
-
-    for( t <- tests ){
-      p.parseAll[Expression]( p.expression, t ) match{
-        case p.Success(result, _) =>
-          val r : Expression = result
-          val v = FormulaEvaluator.computeValue(r)
-          println( s"$r : $v")
-        case p.NoSuccess(msg,_) =>
-          println( "No success:" + msg )
-
-      }
-
-    }
-
-  }
-
-
-
-  testEvaluation()
-}
