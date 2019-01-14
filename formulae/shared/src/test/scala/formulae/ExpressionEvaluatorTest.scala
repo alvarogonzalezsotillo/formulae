@@ -1,7 +1,5 @@
 package formulae
 
-package ecuacion
-
 import org.scalatest._
 
 
@@ -57,7 +55,7 @@ class ExpressionEvaluatorTest extends FlatSpec {
       p.parseAll[Expression]( p.expression, expr ) match{
         case p.Success(result, _) =>
           val r : Expression = result
-          val v = FormulaEvaluator.computeValue(r)
+          val v = ExpressionEvaluator.computeValue(r)
           log( s"$expr: $r : $v")
           assert( v.get == value)
         case p.NoSuccess(msg,_) =>

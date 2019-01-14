@@ -1,7 +1,5 @@
 package formulae
 
-package ecuacion
-
 import org.scalatest._
 
 

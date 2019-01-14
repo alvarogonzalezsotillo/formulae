@@ -1,6 +1,6 @@
 package formulae 
 
-import formulae.FormulaEvaluator.{FunctionMapExpressionContext, VariableMapExpressionContext}
+import formulae.ExpressionEvaluator.{FunctionMapExpressionContext, VariableMapExpressionContext}
 import formulae.ExpressionParser.{BinaryExpression, Expression, FunctionCall, Number, UnaryExpression, Variable}
 
 import scala.util.{Failure, Success, Try}

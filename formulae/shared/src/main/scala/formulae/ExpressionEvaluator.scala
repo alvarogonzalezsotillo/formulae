@@ -2,7 +2,7 @@ package formulae
 
 import scala.util.{Failure, Success, Try}
 
-object FormulaEvaluator {
+object ExpressionEvaluator {
 
   import ExpressionParser._
 
@@ -34,6 +34,8 @@ object FormulaEvaluator {
     }
   }
 
+  def apply(e: Expression)(implicit context: ExpressionContext) = computeValue(e)
+
   def computeValue(e: Expression)(implicit context: ExpressionContext): Try[Double] = e match {
     case fc: FunctionCall => context(fc)
     case BinaryExpression(e1, op, e2) => op.operator match {
@@ -48,15 +50,15 @@ object FormulaEvaluator {
       case "+" => for (v <- computeValue(e)) yield v
       case "-" => for (v <- computeValue(e)) yield -v
       case _ => Failure(new Exception(s"Operador unario no reconocido: $op"))
-
     }
+
     case Number(value) => Success(value.toDouble)
     case v: Variable => context(v)
     case _ => Failure(new Exception(s"Expresión no reconocida: $e"))
   }
 }
 
-import FormulaEvaluator._
+import ExpressionEvaluator._
 
 class DefaultExpressionContext extends ExpressionContext with
   VariableMapExpressionContext with
@@ -70,4 +72,8 @@ class DefaultExpressionContext extends ExpressionContext with
 
   def addFunction( pair: (String,(Seq[Double])=>Double) ) : scala.Unit = addFunction(pair._1, pair._2)
   def addFunction(name: String, function: (Seq[Double]) => Double) : scala.Unit = functionMap += name -> function
+}
+
+object DefaultExpressionContext{
+  def apply() = new DefaultExpressionContext()
 }

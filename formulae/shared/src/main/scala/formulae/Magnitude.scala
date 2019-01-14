@@ -20,10 +20,10 @@ object MagnitudeUnit{
     registry.put( u.symbol, u )
   }
 
-  implicit def toMagnitudeUnit(symbol: String) = registry(symbol)
+  implicit def fromSymbol(symbol: String) = registry(symbol)
 }
 
-case class Unit(
+case class MUnit(
   val names: Localizable.Names,
   val symbol: String,
   val magnitude: Magnitude,
@@ -34,7 +34,7 @@ case class Unit(
 class SIUnit(
   override val names: Localizable.Names,
   override val symbol: String,
-  override val magnitude: Magnitude ) extends Unit(names, symbol, magnitude, 1.0)
+  override val magnitude: Magnitude ) extends MUnit(names, symbol, magnitude, 1.0)
 
 trait Magnitude extends Localizable{
   import Magnitude._
@@ -59,7 +59,7 @@ object speed extends Magnitude{
   val SIunit = new SIUnit( "meters per second", "m/s", this)
   val units = Seq(
     SIunit,
-    Unit("km per hour", "km/h", this, 1000.0/3600.0 )
+    MUnit("km per hour", "km/h", this, 1000.0/3600.0 )
   )
 }
 
@@ -83,6 +83,7 @@ class Measure( val value: Double, val unit: MagnitudeUnit ){
 object Measure{
   implicit def toMeasure( o: Option[Measure] ) : Measure = o.get
   def apply( value: Double, unit: MagnitudeUnit ) = new Measure(value,unit)
+  def apply( value: Double, magnitude: Magnitude) = new Measure(value, magnitude.SIunit )
 }
 
 trait FormulaData extends Localizable{
