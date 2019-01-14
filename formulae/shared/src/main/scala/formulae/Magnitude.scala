@@ -86,18 +86,6 @@ object Measure{
   def apply( value: Double, magnitude: Magnitude) = new Measure(value, magnitude.SIunit )
 }
 
-trait FormulaData extends Localizable{
-  import FormulaData._
-  val variables : Seq[Variable]
-  val names : Map[Locale,String]
-  val computations : Map[Variable,Computation]
-}
-
-object FormulaData{
-  type VariableName = String
-  type Variable = (VariableName,Magnitude.Symbol)
-  type Computation = String
-}
 
 
 object MagnitudeMain{

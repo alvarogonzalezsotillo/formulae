@@ -1,0 +1,11 @@
+Formula(Phitagorean triangle){
+    Variable(a): m
+    Variable(b): m
+    Variable(c): m
+    Expression(c): sqrt(a*a + b*b)
+    Name(es): Triángulo pitagórico
+    Description(es): """
+      En un triángulo rectángulo c es la hipotenusa
+      mucho texto"""
+    
+}
