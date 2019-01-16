@@ -30,20 +30,20 @@ class FormulaParser extends RegexParsers{
 
   import FormulaParser._
 
-  
+  def endOfLine : Parser[String] = "(\\s|\n)*\n".r
 
   def entryName : Parser[EntryName] = "\\w+".r ^^ { case name => EntryName(name) }
   def entryArg: Parser[EntryArg] = "[\\w| ]+".r ^^ { case arg => EntryArg(arg) }
   def entrySimpleValue : Parser[EntryValue] = "[^\n]*".r ^^ { case value => EntryValue(value) }
   def tripleQuote : Parser[String] = "\"\"\"".r
-  def entryMultilineValue : Parser[EntryValue] = tripleQuote ~ "(.|\n)*" ~ tripleQuote ~ "\\s*\n" ^^ {
-    case _ ~ v ~ _ ~ _ => EntryValue(v)
+  def entryMultilineValue : Parser[EntryValue] = tripleQuote ~ "([^\"]|\"[^\"]|\"\"[^\"])*".r ~ tripleQuote ^^ {
+    case _ ~ v ~ _  => EntryValue(v)
   }
 
-  def entryValue : Parser[EntryValue] = entrySimpleValue | entryMultilineValue
+  def entryValue : Parser[EntryValue] = entryMultilineValue | entrySimpleValue
 
-  def entry : Parser[Entry] = "\\s*".r ~ entryName ~ "\\s*\\(".r ~ entryArg  ~ "\\s*\\)\\s*:\\s*".r ~ entryValue ^^ {
-    case _ ~ name ~ _ ~ arg ~ _ ~ value => Entry(name,arg,value)
+  def entry : Parser[Entry] = "\\s*".r ~ entryName ~ "\\s*\\(".r ~ entryArg  ~ "\\)\\s*:\\s*".r ~ entryValue  ~ endOfLine.? ^^ {
+    case _ ~ name ~ _ ~ arg ~ _ ~ value ~ _ => Entry(name,arg,value)
   }
 
   def entries : Parser[Seq[Entry]] = rep(entry)
