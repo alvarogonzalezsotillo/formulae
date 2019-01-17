@@ -48,7 +48,7 @@ class FormulaParser extends RegexParsers{
 
   def entries : Parser[Seq[Entry]] = rep(entry)
 
-  def formula : Parser[Block] = "\\s*Formula\\s*\\(".r ~ entryArg ~ "\\)\\s*{".r ~ entries ~ "\\s*}" ^^ {
+  def formula : Parser[Block] = "\\s*Formula\\s*\\(".r ~ entryArg ~ "\\)\\s*\\{".r ~ entries ~ "\\s*\\}".r ^^ {
     case _ ~ EntryArg(name) ~ _ ~ entries ~ _ => Block( "Formula", name, entries )
   }
 

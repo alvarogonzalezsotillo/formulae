@@ -6,6 +6,42 @@ import org.scalatest._
 
 class FormulaParserTest extends FlatSpec {
 
+  it should "parse }" in{
+    assert( "\\}".r.findFirstMatchIn("}").isDefined )
+    assert( "\\s*\\}".r.findFirstMatchIn("  }").isDefined )
+    assert( "\\s*\\}".r.findFirstMatchIn("}").isDefined )
+  }
+
+
+  it should "Parse formula" in {
+
+    def log(s:String) = { println(s) }
+
+    import FormulaParser._
+    val p = new FormulaParser
+
+    val tests = Seq(
+      """ Formula(a formula) {
+            entrada(arg): value
+            entrada2(adsf): value
+          }
+      """ -> true,
+
+      "Formula ( sadf ) { otro(a): b \n  entrada( arg ) : \"\"\"  algo largo  \"\"\" \n algomas(mas):mas \n } \n" -> true
+
+    )
+
+    for( (expr,value) <- tests ){
+      p.parseAll( p.formula, expr ) match{
+        case p.Success(result, _) =>
+          assert( value, s"Parse was successful, $expr shoud be $value" )
+        case p.NoSuccess(msg,_) =>
+          assert( !value, s"Parse wasnt successful, $expr shoud be $value: $msg")
+      }
+
+    }
+  }
+
   it should "Parse entry" in {
 
     def log(s:String) = { println(s) }
@@ -52,8 +88,8 @@ class FormulaParserTest extends FlatSpec {
       "\"\"\"valid\"\"\"" -> true,
       "\"\"\"invalid\"\"" -> false,
       "\"\"\"invalid\"\"\n\n" -> false,
-      "\"\"\"valid with \n newline\"\"\"\n\n" -> true
-
+      "\"\"\"valid with \n newline\"\"\"\n\n" -> true,
+      "\"\"\"valid with \n newline and \"quotes\" \"\"\"\n\n" -> true
     )
 
     for( (expr,value) <- tests ){
