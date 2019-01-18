@@ -4,7 +4,7 @@ import org.scalatest._
 
 
 
-class FormulaParserTest extends FlatSpec {
+class BlockParserTest extends FlatSpec {
 
   it should "parse }" in{
     assert( "\\}".r.findFirstMatchIn("}").isDefined )
@@ -13,26 +13,26 @@ class FormulaParserTest extends FlatSpec {
   }
 
 
-  it should "Parse formula" in {
+  it should "Parse block" in {
 
     def log(s:String) = { println(s) }
 
-    import FormulaParser._
-    val p = new FormulaParser
+    import BlockParser._
+    val p = new BlockParser
 
     val tests = Seq(
-      """ Formula(a formula) {
+      """ Block(a block) {
             entrada(arg): value
             entrada2(adsf): value
           }
       """ -> true,
 
-      "Formula ( sadf ) { otro(a): b \n  entrada( arg ) : \"\"\"  algo largo  \"\"\" \n algomas(mas):mas \n } \n" -> true
+      "Block ( sadf ) { otro(a): b \n  entrada( arg ) : \"\"\"  algo largo  \"\"\" \n algomas(mas):mas \n } \n" -> true
 
     )
 
     for( (expr,value) <- tests ){
-      p.parseAll( p.formula, expr ) match{
+      p.parseAll( p.block, expr ) match{
         case p.Success(result, _) =>
           assert( value, s"Parse was successful, $expr shoud be $value" )
         case p.NoSuccess(msg,_) =>
@@ -46,8 +46,8 @@ class FormulaParserTest extends FlatSpec {
 
     def log(s:String) = { println(s) }
 
-    import FormulaParser._
-    val p = new FormulaParser
+    import BlockParser._
+    val p = new BlockParser
 
     val tests = Seq(
       "hola(a):b" -> true,
@@ -79,8 +79,8 @@ class FormulaParserTest extends FlatSpec {
 
     def log(s:String) = { println(s) }
 
-    import FormulaParser._
-    val p = new FormulaParser
+    import BlockParser._
+    val p = new BlockParser
 
     val tests = Seq(
       "sdfasdf\n" -> false,

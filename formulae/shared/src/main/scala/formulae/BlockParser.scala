@@ -5,7 +5,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 
 
-object FormulaParser{
+object BlockParser{
 
   def withIndent( out : (String)=>Void, indent: String = "  " ) = (s:String) => out( indent + s )
 
@@ -15,20 +15,16 @@ object FormulaParser{
 
   case class EntryArg( arg: String )
 
-  case class Entry( entryName: EntryName, entryArg: EntryArg, entryValue: EntryValue ){
-    val name = entryName.name
-    val value = entryValue.value
-    val arg = entryArg.arg
-  }
+  case class Entry( name: String, arg: String, value: String )
 
   case class Block( theType: String, name: String, entries: Seq[Entry] )
 }
 
 
-class FormulaParser extends RegexParsers{
+class BlockParser extends RegexParsers{
 
 
-  import FormulaParser._
+  import BlockParser._
 
   def endOfLine : Parser[String] = "(\\s|\n)*\n".r
 
@@ -43,13 +39,13 @@ class FormulaParser extends RegexParsers{
   def entryValue : Parser[EntryValue] = entryMultilineValue | entrySimpleValue
 
   def entry : Parser[Entry] = "\\s*".r ~ entryName ~ "\\s*\\(".r ~ entryArg  ~ "\\)\\s*:\\s*".r ~ entryValue  ~ endOfLine.? ^^ {
-    case _ ~ name ~ _ ~ arg ~ _ ~ value ~ _ => Entry(name,arg,value)
+    case _ ~ name ~ _ ~ arg ~ _ ~ value ~ _ => Entry(name.name,arg.arg,value.value)
   }
 
   def entries : Parser[Seq[Entry]] = rep(entry)
 
-  def formula : Parser[Block] = "\\s*Formula\\s*\\(".r ~ entryArg ~ "\\)\\s*\\{".r ~ entries ~ "\\s*\\}".r ^^ {
-    case _ ~ EntryArg(name) ~ _ ~ entries ~ _ => Block( "Formula", name, entries )
+  def block : Parser[Block] = "\\s*".r ~ entryName ~ "\\s*\\(".r ~ entryArg ~ "\\)\\s*\\{".r ~ entries ~ "\\s*\\}".r ^^ {
+    case _ ~ EntryName(block) ~ _ ~ EntryArg(name) ~ _ ~ entries ~ _ => Block( block, name, entries )
   }
 
 }

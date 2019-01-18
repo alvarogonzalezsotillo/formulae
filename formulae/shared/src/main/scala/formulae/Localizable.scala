@@ -25,6 +25,13 @@ object Localizable{
   implicit def forEnglish(s:String) : Names = {
     Map( Locale("en") -> s )
   }
+
+  def apply() = new DefaultLocalizable(){}
+}
+
+trait DefaultLocalizable extends Localizable{
+  val names = scala.collection.mutable.Map[Locale,String]()
+  def update(l: Locale, n: String) = names(l)=n
 }
 
 class iString(val iMsg: String){

@@ -49,19 +49,6 @@ object Magnitude{
 }
 
 
-object speed extends Magnitude{
-  import Magnitude._
-  import Locale._
-  import Localizable._
-
-  val names : Names = "speed"
-  val symbol = "v"
-  val SIunit = new SIUnit( "meters per second", "m/s", this)
-  val units = Seq(
-    SIunit,
-    MUnit("km per hour", "km/h", this, 1000.0/3600.0 )
-  )
-}
 
 
 class Measure( val value: Double, val unit: MagnitudeUnit ){
@@ -88,52 +75,3 @@ object Measure{
 
 
 
-object MagnitudeMain{
-
-
-  def testMeasure() = {
-    import MagnitudeUnit._
-    import Measure._
-    val v1 = Measure(10, speed.SIunit)
-    val v2 = v1.to("km/h")
-    println( s"$v1 -> $v2")
-  }
-
-  def testIString(){
-
-    import Locale._
-
-    implicit val locale = Locale("en")
-
-    implicit val lm : iString.LocaleMap = Map(
-
-      Locale("es") -> Map(
-        "a" -> "a en español",
-        "b" -> "b en español"
-      ),
-      Locale("en") -> Map(
-        "a" -> "a en inglés",
-        "b" -> "b en inglés"
-      )
-
-    )
-
-    val lable = new Localizable{
-      val names = Map[Locale,String](
-        ("es", "en español"),
-        ("en", "en inglés")
-      )
-    }
-
-    def printLocalized(is: iString) = println( s"$is" )
-
-
-    printLocalized(lable)
-    printLocalized("b")
-    printLocalized(speed)
-    speed.units.foreach( u => printLocalized(u) )
-
-  }
-
-  testIString()
-}
