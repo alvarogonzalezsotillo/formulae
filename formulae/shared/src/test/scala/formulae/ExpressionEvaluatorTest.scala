@@ -13,7 +13,7 @@ class ExpressionEvaluatorTest extends FlatSpec {
     }
 
 
-    implicit val context = new DefaultExpressionContext()
+    implicit val context = DefaultExpressionContext()
 
     Seq[(String,Double)](
       "a" -> 1,
@@ -28,11 +28,7 @@ class ExpressionEvaluatorTest extends FlatSpec {
     import Math._
 
     Seq[(String,(Seq[Double])=> Double)](
-      "sen" -> { case(a) => sin(a.head) },
-      "cos" -> { case(a) =>cos(a.head) },
-      "avg" -> { case(a) => a.sum / a.size },
-      "a" -> { case(a) => 10 },
-      "pi" -> { case(a) => PI }
+      "a" -> { case(a) => 10 }
     ).map(context.addFunction)
 
     val tests = Seq[(String,Double)](
@@ -45,7 +41,8 @@ class ExpressionEvaluatorTest extends FlatSpec {
       "sen(x*t+f)*sen(x*t+f) + cos(x*t+f)*cos(x*t+f)" -> (sin(0.125*0.5+0.25)*sin(0.125*0.5+0.25) + cos(0.125*0.5+0.25)*cos(0.125*0.5+0.25)),
       "avg(x,cos(x*t+f),a())" -> (0.125 + cos(0.125*0.5+0.25) + 10)/3,
       "-52" -> -52,
-      "11%d" -> 11%4
+      "11%d" -> 11%4,
+      "sqrt(16)" -> 4
     )
 
     import ExpressionParser.Expression

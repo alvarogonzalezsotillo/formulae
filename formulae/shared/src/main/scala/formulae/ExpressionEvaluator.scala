@@ -70,10 +70,25 @@ class DefaultExpressionContext extends ExpressionContext with
 
   override val functionMap: collection.mutable.Map[String, Seq[Double] => Double] = collection.mutable.Map()
 
-  def addFunction( pair: (String,(Seq[Double])=>Double) ) : scala.Unit = addFunction(pair._1, pair._2)
-  def addFunction(name: String, function: (Seq[Double]) => Double) : scala.Unit = functionMap += name -> function
+  def addFunction( pair: (String,(Seq[Double])=>Double) ) : Unit = addFunction(pair._1, pair._2)
+  def addFunction(name: String, function: (Seq[Double]) => Double) : Unit = functionMap += name -> function
 }
 
 object DefaultExpressionContext{
-  def apply() = new DefaultExpressionContext()
+  def apply() = {
+
+    val ret = new DefaultExpressionContext()
+
+    import Math._
+
+    Seq[(String,(Seq[Double])=> Double)](
+      "sen" -> { case(a) => sin(a.head) },
+      "cos" -> { case(a) =>cos(a.head) },
+      "avg" -> { case(a) => a.sum / a.size },
+      "sqrt" -> { case(a) => sqrt(a.head) },
+      "pi" -> { case(a) => PI }
+    ).map(ret.addFunction)
+    
+    ret
+  }
 }
