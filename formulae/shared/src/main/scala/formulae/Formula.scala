@@ -49,10 +49,10 @@ object Formula{
   def parseEntries(f: DefaultExpressionFormula, entries: Seq[Entry])  = {
     entries.foreach( _ match{
       case Entry("Variable",arg,value) =>
-        f.variablesMap(arg) = MagnitudeUnit.fromSymbol(value)
+        f.variablesMap(arg) = Magnitude.unitFromSymbol(value).get
 
       case Entry("Expression",arg,value) =>
-        f.variablesMap(arg) = MagnitudeUnit.fromSymbol(value)
+        f.expressionsMap(arg) = ExpressionParser.parse(value)
 
       case Entry("Name",arg,value) =>
         f.name(Locale(arg)) = value

@@ -1,0 +1,28 @@
+Magnitude(length){
+  Name(es): distancia
+}
+
+Magnitude(speed){
+  Name(es): velocidad
+}
+
+Unit(m/s){
+  SIConversion(speed): 1
+}
+
+Unit(km/h){
+  SIConversion(speed): 3600/1000
+}
+
+
+Unit(m){
+  Name(en): meter
+  Name(es): metro
+  SIConversion(length): 1
+}
+
+Unit(cm){
+  Name(en): centimeter
+  Name(es): centímetro
+  SIConversion(length): 0.01
+}

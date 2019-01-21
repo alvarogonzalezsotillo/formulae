@@ -56,6 +56,18 @@ object ExpressionParser{
     override val toString = symbol.name
     def dump( out : (String)=>Void ) = out(toString)
   }
+
+
+  def parse(s:String) = {
+    val p = new ExpressionParser()
+
+    p.parseAll( p.expression, s ) match{
+      case p.Success(result, _) =>
+        result
+      case p.NoSuccess(msg,_) =>
+        throw new RuntimeException(msg)
+    }
+  }
 }
 
 

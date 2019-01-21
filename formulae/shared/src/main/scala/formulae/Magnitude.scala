@@ -2,50 +2,72 @@ package formulae
 
 
 
+class Registry[K,V]( factory: (K)=>V ){
+  private val registry = scala.collection.mutable.Map[K,V]()
+
+  def apply(k:K) = registry.get(k) match{
+    case Some(v) =>
+      v
+    case None =>
+      val ret = factory(k)
+      registry(k) = ret
+      ret
+  }
+
+  def keys = registry.keys
+  def values = registry.values
+}
 
 
-trait MagnitudeUnit extends Localizable{
-  val names: Localizable.Names
+trait MagnitudeUnit{
+  val name: Localizable
   val symbol : String
   val magnitude: Magnitude
-  val toSI : Double
+  def toSI : Double
 }
 
 object MagnitudeUnit{
   private val registry = scala.collection.mutable.Map[String,MagnitudeUnit]()
-  def register(u: MagnitudeUnit){
-    if( registry.contains(u.symbol) ){
-      ???
-    }
-    registry.put( u.symbol, u )
-  }
-
-  implicit def fromSymbol(symbol: String) = registry(symbol)
 }
 
-case class MUnit(
-  val names: Localizable.Names,
-  val symbol: String,
-  val magnitude: Magnitude,
-  val toSI: Double ) extends MagnitudeUnit{
-  MagnitudeUnit.register(this)
-}
 
-class SIUnit(
-  override val names: Localizable.Names,
-  override val symbol: String,
-  override val magnitude: Magnitude ) extends MUnit(names, symbol, magnitude, 1.0)
-
-trait Magnitude extends Localizable{
+trait Magnitude{
   import Magnitude._
-  val names: Localizable.Names
+  val name: Localizable
   val symbol : Symbol
-  val units : Seq[MagnitudeUnit]
-  val SIunit : MagnitudeUnit
+  def units : Seq[MagnitudeUnit]
+  def SIunit : MagnitudeUnit
 }
 
 object Magnitude{
   type Symbol = String
+
+  private val registry = new Registry[Symbol,DefaultMagnitude]( new DefaultMagnitude(_) )
+
+
+  private class DefaultMagnitude(val symbol: Symbol) extends Magnitude{
+    val name = Localizable()
+
+    private class DefaultUnit(val symbol: Symbol) extends MagnitudeUnit{
+      val name = Localizable()
+      val magnitude = DefaultMagnitude.this
+      var toSI : Double = 0
+    }
+
+    private val uregistry = new Registry[Symbol,DefaultUnit]( new DefaultUnit(_) )
+
+    private def getUnit(s:Symbol) = uregistry(s)
+
+    def units : Seq[MagnitudeUnit]= uregistry.values.toSeq
+
+    def SIunit = units.find( _.toSI == 1 ).get 
+  }
+
+  def getMagnitude(s:Symbol) : Magnitude = registry(s)
+
+  def magnitudes : Seq[Magnitude] = registry.values.toSeq
+
+  def unitFromSymbol(s:Symbol) = registry.values.map(_.units).flatten.find(_.symbol==s)
 }
 
 
