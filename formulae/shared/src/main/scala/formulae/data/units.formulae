@@ -7,7 +7,7 @@ Magnitude(speed){
 }
 
 Unit(m/s){
-  SIConversion(speed): 1
+  SIConversion(speed): value
 }
 
 Unit(km/h){
@@ -18,11 +18,11 @@ Unit(km/h){
 Unit(m){
   Name(en): meter
   Name(es): metro
-  SIConversion(length): 1
+  SIConversion(length): value
 }
 
 Unit(cm){
   Name(en): centimeter
   Name(es): centímetro
-  SIConversion(length): 0.01
+  SIConversion(length): value*0.01
 }

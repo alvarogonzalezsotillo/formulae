@@ -27,7 +27,17 @@ class BlockParserTest extends FlatSpec {
           }
       """ -> true,
 
-      "Block ( sadf ) { otro(a): b \n  entrada( arg ) : \"\"\"  algo largo  \"\"\" \n algomas(mas):mas \n } \n" -> true
+      """ 
+      Block ( sadf ) { 
+         otro(a): b 
+          entrada( arg ) : <<<  
+             algo largo
+             con líneas
+             y >> pero no tres seguidos
+          >>> 
+          algomas(mas):mas  
+      } 
+      """ -> true
 
     )
 
@@ -59,8 +69,9 @@ class BlockParserTest extends FlatSpec {
       "entry(arg):value" -> true,
       "entry(arg with spaces): value with spaces" -> true,
       "entry(arg with spaces): value with spaces\n\n" -> true,
-      "entry(arg with spaces): \"\"\"  long value    \"\"\"" -> true,
-      "entry(arg with spaces): \"\"\"  long  \n value    \"\"\"" -> true
+      "entry(arg with spaces): <<<  long value   >>>" -> true,
+      "entry(arg with spaces): <<<  long  \n value>>>" -> true,
+      "entry(arg with spaces): <<<  long \n \n> \n >>value>>>" -> true
       
    )
 
@@ -84,12 +95,12 @@ class BlockParserTest extends FlatSpec {
 
     val tests = Seq(
       "sdfasdf\n" -> false,
-      "\"\"\"valid\"\"\"\n\n" -> true,
-      "\"\"\"valid\"\"\"" -> true,
-      "\"\"\"invalid\"\"" -> false,
-      "\"\"\"invalid\"\"\n\n" -> false,
-      "\"\"\"valid with \n newline\"\"\"\n\n" -> true,
-      "\"\"\"valid with \n newline and \"quotes\" \"\"\"\n\n" -> true
+      "<<<valid>>>\n\n" -> true,
+      "<<<valid>>>" -> true,
+      "<<<invalid>>" -> false,
+      "<<<invalid>>\n\n" -> false,
+      "<<<valid with \n newline>>>\n\n" -> true,
+      "<<<valid with \n newline and >quotes> >>>\n\n" -> true
     )
 
     for( (expr,value) <- tests ){

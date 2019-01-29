@@ -38,7 +38,7 @@ object Formula{
   def apply(b: Block) = parseBlock(b)
 
   def parseBlock(b: Block) : Option[Formula] = b match{
-    case Block("Formula",id,entries) =>
+    case Block("Formula",Seq(id),entries) =>
       val ret = internalGet(id)
       parseEntries(ret,entries)
       Some(ret)
@@ -46,15 +46,15 @@ object Formula{
       None
   }
 
-  def parseEntries(f: DefaultExpressionFormula, entries: Seq[Entry])  = {
+  private def parseEntries(f: DefaultExpressionFormula, entries: Seq[Entry])  = {
     entries.foreach( _ match{
-      case Entry("Variable",arg,value) =>
+      case Entry("Variable",Seq(arg),value) =>
         f.variablesMap(arg) = Magnitude.unitFromSymbol(value).get
 
-      case Entry("Expression",arg,value) =>
+      case Entry("Expression",Seq(arg),value) =>
         f.expressionsMap(arg) = ExpressionParser.parse(value)
 
-      case Entry("Name",arg,value) =>
+      case Entry("Name",Seq(arg),value) =>
         f.name(Locale(arg)) = value
 
       case e =>

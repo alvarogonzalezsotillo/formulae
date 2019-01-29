@@ -20,10 +20,13 @@ class Registry[K,V]( factory: (K)=>V ){
 
 
 trait MagnitudeUnit{
+  import ExpressionParser._
+
   val name: Localizable
   val symbol : String
-  val magnitude: Magnitude
-  def toSI : Double
+  def magnitude: Magnitude
+  def toSI : Expression
+  def fromSI : Expression
 }
 
 object MagnitudeUnit{
@@ -44,15 +47,16 @@ object Magnitude{
 
   private val registry = new Registry[Symbol,DefaultMagnitude]( new DefaultMagnitude(_) )
 
+  private class DefaultUnit(val symbol: Symbol) extends MagnitudeUnit{
+    val name = Localizable()
+    var magnitude = null
+    var toSI = null
+    var fromSI = null
+  }
 
   private class DefaultMagnitude(val symbol: Symbol) extends Magnitude{
     val name = Localizable()
 
-    private class DefaultUnit(val symbol: Symbol) extends MagnitudeUnit{
-      val name = Localizable()
-      val magnitude = DefaultMagnitude.this
-      var toSI : Double = 0
-    }
 
     private val uregistry = new Registry[Symbol,DefaultUnit]( new DefaultUnit(_) )
 
@@ -68,6 +72,10 @@ object Magnitude{
   def magnitudes : Seq[Magnitude] = registry.values.toSeq
 
   def unitFromSymbol(s:Symbol) = registry.values.map(_.units).flatten.find(_.symbol==s)
+
+
+
+
 }
 
 
@@ -76,8 +84,12 @@ object Magnitude{
 class Measure( val value: Double, val unit: MagnitudeUnit ){
   def to( u: MagnitudeUnit ) = {
     if( u.magnitude == unit.magnitude ){
-      val v = value * unit.toSI / u.toSI;
-      Some(Measure(v,u))
+      implicit val context = DefaultExpressionContext()
+      context.addVariable("value", value)
+      val si = ExpressionEvaluator.computeValue(unit.toSI)
+      context.addVariable("value", si.get )
+      val v = ExpressionEvaluator.computeValue(u.fromSI)
+      Some(Measure(v.get,u))
     }
     else{
       None
