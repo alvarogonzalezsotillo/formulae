@@ -1,0 +1,17 @@
+Formula(rectangle triangle){
+
+  Name(en) : Rectangle triangle
+  Name(es) : Triángulo rectángulo
+
+  Description(es): """
+    Un triángulo rectángulo tiene uno de sus ángulos recto
+ 
+    $\sqrt{a^2 + b^2}$"""
+    
+  Variable(a): m
+  Variable(b): m
+  Variable(c): m
+
+  Expression(c): sqrt(a*a + b*b)
+
+}
