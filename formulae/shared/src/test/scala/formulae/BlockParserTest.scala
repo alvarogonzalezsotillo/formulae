@@ -37,6 +37,17 @@ class BlockParserTest extends FlatSpec {
           >>> 
           algomas(mas):mas  
       } 
+      """ -> true,
+      """
+      Block ( sadf, abcd ) {
+         otro(a): b 
+          entrada: <<<  
+             algo largo
+             con líneas
+             y >> pero no tres seguidos
+          >>> 
+          algomas(mas):mas  
+      } 
       """ -> true
 
     )
@@ -62,8 +73,8 @@ class BlockParserTest extends FlatSpec {
     val tests = Seq(
       "hola(a):b" -> true,
       "hola  ( a ) : b" -> true,
-      "hola : b" -> false,
-      "hola:b" -> false,
+      "hola : b" -> true,
+      "hola:b" -> true,
       "hola(a())" -> false,
       "entry(arg):value\n" -> true,
       "entry(arg):value" -> true,

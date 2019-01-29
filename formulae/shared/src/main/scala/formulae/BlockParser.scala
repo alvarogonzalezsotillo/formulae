@@ -43,8 +43,9 @@ class BlockParser extends RegexParsers{
     case _ ~ seq ~ _ => seq
   }
 
-  def entry : Parser[Entry] = "\\s*".r ~ entryName ~ argsList ~ "\\s*:\\s*".r ~ entryValue  ~ endOfLine.? ^^ {
-    case _ ~ name ~ args ~ _ ~ value ~ _ => Entry(name.name,args.map(_.arg),value.value)
+  def entry : Parser[Entry] = "\\s*".r ~ entryName ~ argsList.? ~ "\\s*:\\s*".r ~ entryValue  ~ endOfLine.? ^^ {
+    case _ ~ name ~ Some(args) ~ _ ~ value ~ _ => Entry(name.name,args.map(_.arg),value.value)
+    case _ ~ name ~ None ~ _ ~ value ~ _ => Entry(name.name,Seq(),value.value)
   }
 
   def entries : Parser[Seq[Entry]] = rep(entry)
